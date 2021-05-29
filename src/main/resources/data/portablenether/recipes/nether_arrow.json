@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:arrow"
+    },
+    {
+      "item": "portablenether:nether_teleporter"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "portablenether:nether_arrow"
+  }
+}
