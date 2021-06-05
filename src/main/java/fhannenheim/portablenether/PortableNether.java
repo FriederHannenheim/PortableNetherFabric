@@ -1,7 +1,9 @@
 package fhannenheim.portablenether;
 
 import fhannenheim.portablenether.entities.EntityRegistry;
+import fhannenheim.portablenether.entities.NetherArrowEntity;
 import fhannenheim.portablenether.items.ItemRegistry;
+import fhannenheim.portablenether.items.NetherArrow;
 import fhannenheim.portablenether.networking.EntitySpawnPacket;
 import fhannenheim.portablenether.renderer.NetherArrowEntityRenderer;
 import fhannenheim.portablenether.util.Teleporter;
@@ -12,12 +14,18 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.dispenser.ProjectileDispenserBehavior;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -31,7 +39,7 @@ public class PortableNether implements ModInitializer, ClientModInitializer {
     public static final String MOD_ID = "portablenether";
     public static final Identifier SPAWN_PACKET_ID = new Identifier(MOD_ID, "spawn_packet");
     public static Logger LOGGER;
-    public static final Queue<LivingEntity> to_teleport = new PriorityQueue<>();
+    public static final List<LivingEntity> to_teleport = new ArrayList<>();
 
     @Override
     public void onInitialize() {
@@ -43,7 +51,15 @@ public class PortableNether implements ModInitializer, ClientModInitializer {
         // Teleports entities at the end of the tick
         ServerTickEvents.END_SERVER_TICK.register((server) -> {
             while (!to_teleport.isEmpty()){
-                Teleporter.teleport(to_teleport.poll());
+                Teleporter.teleport(to_teleport.get(0));
+                to_teleport.remove(0);
+            }
+        });
+
+        DispenserBlock.registerBehavior(ItemRegistry.NETHER_ARROW, new ProjectileDispenserBehavior() {
+            @Override
+            protected ProjectileEntity createProjectile(World world, Position position, ItemStack stack) {
+                return new NetherArrowEntity(world, position.getX(), position.getY(), position.getZ());
             }
         });
     }
